@@ -1,0 +1,67 @@
+@startuml
+
+skinparam ranksep 100
+skinparam nodesep 100
+
+package "cli" {
+    class CommandHandler {
+        - taskMgr: TaskManager
+        + CommandHandler(taskMgr: TaskManager)
+        + handle(args: String[]): void
+        - {static} parseStatus(status: TaskStatus): TaskStatus
+    }
+}
+
+package "domain" {
+    enum TaskStatus {
+        TODO
+        IN_PROGRESS
+        DONE
+    }
+
+    class Task {
+        - id: int
+        - description: String
+        - status: TaskStatus
+        - createdAt: LocalDateTime
+        - updatedAt: LocalDateTime
+        + Task(id: int, description: String, status: TaskStatus, createdAt: LocalDateTime, updatedAt: LocalDateTime)
+        + getId(): int
+        + getDescription(): String
+        + setDescription(description: String): void
+        + getStatus(): TaskStatus
+        + setStatus(status: TaskStatus): void
+        + getCreatedAt(): LocalDateTime
+        + getUpdatedAt(): LocalDateTime
+    }
+
+    class TaskManager {
+        - taskRepository: TaskRepository
+        + TaskManager(taskRepository: TaskRepository)
+        + addTask(description: String): void
+        + listTasksAll(): void
+        + listTasksByStatus(status: TaskStatus): void
+        + updateTask(id: int, description: String): void
+        + updateTask(id: int, status: TaskStatus): void
+        + deleteTask(id: int): void
+    }
+}
+
+package "persistence" {
+    class TaskRepository {
+        - {static} FILE_PATH: String
+        + TaskRepository()
+        + saveTask(task: Task): void
+        + getTasksAll(): List<Task>
+        + getTasksByStatus(status: TaskStatus): List<Task>
+        + getTaskById(id: int): Task
+        + deleteTaskById(id: int): void
+    }
+}
+
+CommandHandler ..> TaskManager : <<uses>>
+TaskManager ..> Task : <<manages>>
+TaskManager ..> TaskRepository : <<uses>>
+TaskRepository ..> Task : <<manages>>
+
+@enduml
