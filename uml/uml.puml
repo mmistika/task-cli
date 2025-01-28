@@ -62,11 +62,16 @@ package "persistence" {
         - {static} jsonFromTask(task: Task): String
         - {static} jsonFromTaskWithComma(task: Task): String
     }
+
+    class RepositoryException {
+        + RepositoryException(message: String)
+    }
 }
 
 CommandHandler ..> TaskManager : <<uses>>
 TaskManager ..> Task : <<manages>>
 TaskManager ..> TaskRepository : <<uses>>
 TaskRepository ..> Task : <<manages>>
+TaskRepository ..> RepositoryException: <<uses>>
 
 @enduml
