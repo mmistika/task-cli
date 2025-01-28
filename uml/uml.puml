@@ -51,11 +51,16 @@ package "persistence" {
     class TaskRepository {
         - {static} FILE_PATH: String
         + TaskRepository()
+        + getNextAvailableId(): int
         + saveTask(task: Task): void
         + getTasksAll(): List<Task>
         + getTasksByStatus(status: TaskStatus): List<Task>
         + getTaskById(id: int): Task
         + deleteTaskById(id: int): void
+        - {static} getValueByKey(json: String, key: String): String
+        - {static} taskFromJson(json: String): Task
+        - {static} jsonFromTask(task: Task): String
+        - {static} jsonFromTaskWithComma(task: Task): String
     }
 }
 
