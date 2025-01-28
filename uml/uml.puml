@@ -44,6 +44,8 @@ package "domain" {
         + updateTask(id: int, description: String): void
         + updateTask(id: int, status: TaskStatus): void
         + deleteTask(id: int): void
+        - updateTask(task: Task): void
+        - {static} printTask(task: Task): void
     }
 }
 
