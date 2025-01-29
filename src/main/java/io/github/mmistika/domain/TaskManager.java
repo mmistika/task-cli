@@ -80,8 +80,12 @@ public class TaskManager {
      */
     public void updateTask(int id, String description) {
         var updated = taskRepository.getTaskById(id);
-        updated.setDescription(description);
-        updateTask(updated);
+        if (updated != null) {
+            updated.setDescription(description);
+            updateTask(updated);
+        } else {
+            System.out.println("Task not found");
+        }
     }
 
     /**
@@ -92,8 +96,12 @@ public class TaskManager {
      */
     public void updateTask(int id, TaskStatus status) {
         var updated = taskRepository.getTaskById(id);
-        updated.setStatus(status);
-        updateTask(updated);
+        if (updated != null) {
+            updated.setStatus(status);
+            updateTask(updated);
+        } else {
+            System.out.println("Task not found");
+        }
     }
 
     /**
