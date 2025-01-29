@@ -177,13 +177,15 @@ public class TaskRepository {
      * @throws IllegalArgumentException if the key or value is not found in the JSON.
      */
     private static String getValueByKey(String json, String key) throws IllegalArgumentException {
-        var valuePattern = String.format("(?<=\"%s\":\"?).*?(?=[\",}])", key);
+        var valuePattern = String.format("((?<=\"%s\":\"?).*?(?=[\",}]))", key);
         var matcher = Pattern.compile(valuePattern).matcher(json);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            throw new IllegalArgumentException("Value not found");
+        while (matcher.find()) {
+            var match = matcher.group(1);
+            if (!match.isBlank()) {
+                return match;
+            }
         }
+        throw new IllegalArgumentException("Value not found");
     }
 
     /**
