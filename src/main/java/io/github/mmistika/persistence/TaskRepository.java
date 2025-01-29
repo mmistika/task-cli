@@ -71,11 +71,13 @@ public class TaskRepository {
      * @throws RepositoryException if the task cannot be saved to the file.
      */
     public void saveTask(Task task) throws RepositoryException {
-        var lines = getTasksAll().stream()
+        var lines = new ArrayList<>(getTasksAll().stream()
                 .map(TaskRepository::jsonFromTaskWithComma)
-                .toList();
+                .toList());
 
-        lines.addLast(jsonFromTask(task));
+        lines.addFirst("[");
+        lines.add(jsonFromTask(task));
+        lines.add("]");
 
         try {
             Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
@@ -151,10 +153,13 @@ public class TaskRepository {
      * @throws RepositoryException if the task cannot be deleted from the file.
      */
     public void deleteTaskById(int id) throws RepositoryException {
-        var lines = getTasksAll().stream()
+        var lines = new ArrayList<>(getTasksAll().stream()
                 .filter(task -> task.getId() != id)
                 .map(TaskRepository::jsonFromTaskWithComma)
-                .toList();
+                .toList());
+
+        lines.addFirst("[");
+        lines.add("]");
 
         try {
             Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
