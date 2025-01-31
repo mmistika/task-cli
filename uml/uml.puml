@@ -51,6 +51,7 @@ package "domain" {
 
 package "persistence" {
     class TaskRepository {
+        - cachedTasks: List<Task>
         - {static} FILE_PATH: String
         + TaskRepository()
         + getNextAvailableId(): int
