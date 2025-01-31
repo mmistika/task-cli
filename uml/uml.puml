@@ -62,7 +62,6 @@ package "persistence" {
         - {static} getValueByKey(json: String, key: String): String
         - {static} taskFromJson(json: String): Task
         - {static} jsonFromTask(task: Task): String
-        - {static} jsonFromTaskWithComma(task: Task): String
     }
 
     class RepositoryException {
