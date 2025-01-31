@@ -37,13 +37,13 @@ task-cli <command> [options]
 
 ### Commands  
 
-| Command                         | Description                                  | Example                                  |
-|---------------------------------|----------------------------------------------|------------------------------------------|
-| `add <description>`             | Add a new task                              | `task-cli add "Buy groceries"`          |
-| `update <id> <new-description>` | Update a task's description                 | `task-cli update 1 "Buy groceries and cook dinner"` |
-| `delete <id>`                   | Remove a task permanently                   | `task-cli delete 1`                      |
-| `mark-todo <id>`                | Mark a task as "To Do"                      | `task-cli mark-todo 1`                   |
-| `mark-in-progress <id>`         | Mark a task as "In Progress"                | `task-cli mark-in-progress 1`            |
-| `mark-done <id>`                | Mark a task as "Done"                       | `task-cli mark-done 1`                   |
-| `list`                          | Show all tasks                              | `task-cli list`                          |
-| `list <status>`                 | Filter tasks by status (`todo`, `in-progress`, `done`) | `task-cli list done` |
+| Command                         | Description                                            | Example                                             |
+|---------------------------------|--------------------------------------------------------|-----------------------------------------------------|
+| `add <description>`             | Add a new task                                         | `task-cli add "Buy groceries"`                      |
+| `update <id> <new-description>` | Update a task's description                            | `task-cli update 1 "Buy groceries and cook dinner"` |
+| `delete <id>`                   | Remove a task permanently                              | `task-cli delete 1`                                 |
+| `mark-todo <id>`                | Mark a task as "To Do"                                 | `task-cli mark-todo 1`                              |
+| `mark-in-progress <id>`         | Mark a task as "In Progress"                           | `task-cli mark-in-progress 1`                       |
+| `mark-done <id>`                | Mark a task as "Done"                                  | `task-cli mark-done 1`                              |
+| `list`                          | Show all tasks                                         | `task-cli list`                                     |
+| `list <status>`                 | Filter tasks by status (`todo`, `in-progress`, `done`) | `task-cli list done`                                |
