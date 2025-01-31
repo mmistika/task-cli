@@ -71,19 +71,9 @@ public class TaskRepository {
      * @throws RepositoryException if the task cannot be saved to the file.
      */
     public void saveTask(Task task) throws RepositoryException {
-        var lines = new ArrayList<>(getTasksAll().stream()
-                .map(TaskRepository::jsonFromTask)
-                .toList());
-
-        lines.addFirst("[");
-        lines.add(jsonFromTask(task));
-        lines.add("]");
-
-        try {
-            Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RepositoryException("Cannot write JSON file");
-        }
+        var tasks = new ArrayList<>(getTasksAll());
+        tasks.add(task);
+        writeTasksToFile(tasks);
     }
 
     /**
@@ -93,24 +83,7 @@ public class TaskRepository {
      * @throws RepositoryException if tasks cannot be read from the file.
      */
     public List<Task> getTasksAll() throws RepositoryException {
-        try {
-            var lines = Files.readAllLines(Path.of(FILE_PATH), StandardCharsets.UTF_8);
-
-            if (lines.isEmpty()) {
-                return new ArrayList<>();
-            }
-            if (!lines.removeFirst().equals("[") || !lines.removeLast().equals("]")) {
-                return new ArrayList<>();
-            }
-
-            return lines.stream()
-                    .filter(line -> line.matches("\\{.*},?"))
-                    .map(TaskRepository::taskFromJson)
-                    .filter(Objects::nonNull)
-                    .toList();
-        } catch (IOException e) {
-            throw new RepositoryException("Cannot read JSON file");
-        }
+        return loadTasksFromFile();
     }
 
     /**
@@ -153,19 +126,10 @@ public class TaskRepository {
      * @throws RepositoryException if the task cannot be deleted from the file.
      */
     public void deleteTaskById(int id) throws RepositoryException {
-        var lines = new ArrayList<>(getTasksAll().stream()
+        var tasks = getTasksAll().stream()
                 .filter(task -> task.getId() != id)
-                .map(TaskRepository::jsonFromTask)
-                .toList());
-
-        lines.addFirst("[");
-        lines.add("]");
-
-        try {
-            Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RepositoryException("Cannot write JSON file");
-        }
+                .toList();
+        writeTasksToFile(tasks);
     }
 
     /**
@@ -220,5 +184,46 @@ public class TaskRepository {
                 + "\"status\":\"" + task.getStatus() + "\","
                 + "\"createdAt\":\"" + task.getCreatedAt() + "\","
                 + "\"updatedAt\":\"" + task.getUpdatedAt() + "\"},";
+    }
+
+    /**
+     * Writes the task list to the JSON file.
+     *
+     * @param tasks The list of tasks to write.
+     * @throws RepositoryException if an error occurs while writing.
+     */
+    private void writeTasksToFile(List<Task> tasks) throws RepositoryException {
+        var lines = new ArrayList<>(tasks.stream()
+                .map(TaskRepository::jsonFromTask)
+                .toList());
+        lines.addFirst("[");
+        lines.add("]");
+        try {
+            Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RepositoryException("Cannot write JSON file");
+        }
+    }
+
+    /**
+     * Loads tasks from the JSON file.
+     *
+     * @return A list of tasks parsed from the file.
+     * @throws RepositoryException if an error occurs while reading.
+     */
+    private List<Task> loadTasksFromFile() throws RepositoryException {
+        try {
+            var lines = Files.readAllLines(Path.of(FILE_PATH), StandardCharsets.UTF_8);
+            if (lines.size() < 2 || !lines.removeFirst().equals("[") || !lines.removeLast().equals("]")) {
+                return new ArrayList<>();
+            }
+            return lines.stream()
+                    .filter(line -> line.matches("\\{.*},?"))
+                    .map(TaskRepository::taskFromJson)
+                    .filter(Objects::nonNull)
+                    .toList();
+        } catch (IOException e) {
+            throw new RepositoryException("Cannot read JSON file");
+        }
     }
 }
