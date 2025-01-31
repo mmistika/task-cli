@@ -24,6 +24,11 @@ public class TaskRepository {
     private final static String FILE_PATH = "data.json";
 
     /**
+     * Cached list of tasks to minimize file reads.
+     */
+    private List<Task> cachedTasks = null;
+
+    /**
      * Initializes the repository by ensuring the JSON file exists.
      * If the file does not exist, it will be created.
      *
@@ -77,13 +82,15 @@ public class TaskRepository {
     }
 
     /**
-     * Retrieves all tasks from the JSON file.
+     * Retrieves all tasks from the repository, using the cache when possible.
      *
      * @return A list of all tasks stored in the repository.
-     * @throws RepositoryException if tasks cannot be read from the file.
      */
-    public List<Task> getTasksAll() throws RepositoryException {
-        return loadTasksFromFile();
+    public List<Task> getTasksAll() {
+        if (cachedTasks == null) {
+            cachedTasks = loadTasksFromFile();
+        }
+        return cachedTasks;
     }
 
     /**
@@ -93,13 +100,9 @@ public class TaskRepository {
      * @return A list of tasks matching the specified status.
      */
     public List<Task> getTasksByStatus(TaskStatus status) {
-        try {
-            return getTasksAll().stream()
-                    .filter(task -> task.getStatus().equals(status))
-                    .toList();
-        } catch (RepositoryException e) {
-            return new ArrayList<>();
-        }
+        return getTasksAll().stream()
+                .filter(task -> task.getStatus().equals(status))
+                .toList();
     }
 
     /**
@@ -109,14 +112,10 @@ public class TaskRepository {
      * @return The task with the specified ID, or {@code null} if not found.
      */
     public Task getTaskById(int id) {
-        try {
-            return getTasksAll().stream()
-                    .filter(task -> task.getId() == id)
-                    .findFirst()
-                    .orElse(null);
-        } catch (RepositoryException e) {
-            return null;
-        }
+        return getTasksAll().stream()
+                .filter(task -> task.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -187,7 +186,7 @@ public class TaskRepository {
     }
 
     /**
-     * Writes the task list to the JSON file.
+     * Writes the task list to the JSON file and updates cache.
      *
      * @param tasks The list of tasks to write.
      * @throws RepositoryException if an error occurs while writing.
@@ -200,6 +199,7 @@ public class TaskRepository {
         lines.add("]");
         try {
             Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
+            cachedTasks = new ArrayList<>(tasks);
         } catch (IOException e) {
             throw new RepositoryException("Cannot write JSON file");
         }
@@ -209,21 +209,26 @@ public class TaskRepository {
      * Loads tasks from the JSON file.
      *
      * @return A list of tasks parsed from the file.
-     * @throws RepositoryException if an error occurs while reading.
      */
-    private List<Task> loadTasksFromFile() throws RepositoryException {
+    private List<Task> loadTasksFromFile() {
         try {
             var lines = Files.readAllLines(Path.of(FILE_PATH), StandardCharsets.UTF_8);
             if (lines.size() < 2 || !lines.removeFirst().equals("[") || !lines.removeLast().equals("]")) {
-                return new ArrayList<>();
+                throw new IOException("Invalid JSON format");
             }
-            return lines.stream()
+            cachedTasks = lines.stream()
                     .filter(line -> line.matches("\\{.*},?"))
                     .map(TaskRepository::taskFromJson)
                     .filter(Objects::nonNull)
                     .toList();
+            return cachedTasks;
         } catch (IOException e) {
-            throw new RepositoryException("Cannot read JSON file");
+            System.err.println("Warning: Failed to read JSON file. Using cached data if available.");
+            // Assign empty list only if cache was never loaded
+            if (cachedTasks == null) {
+                cachedTasks = new ArrayList<>();
+            }
+            return cachedTasks;
         }
     }
 }

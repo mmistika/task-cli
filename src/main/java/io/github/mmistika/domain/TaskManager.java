@@ -47,15 +47,11 @@ public class TaskManager {
      * If no tasks are found, a message is displayed.
      */
     public void listTasksAll() {
-        try {
-            var tasks = taskRepository.getTasksAll();
-            if (tasks.isEmpty()) {
-                System.out.println("No tasks found");
-            }
-            tasks.forEach(TaskManager::printTask);
-        } catch (RepositoryException e) {
-            System.out.println("Error: " + e.getMessage());
+        var tasks = taskRepository.getTasksAll();
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks found");
         }
+        tasks.forEach(TaskManager::printTask);
     }
 
     /**
