@@ -72,7 +72,7 @@ public class TaskRepository {
      */
     public void saveTask(Task task) throws RepositoryException {
         var lines = new ArrayList<>(getTasksAll().stream()
-                .map(TaskRepository::jsonFromTaskWithComma)
+                .map(TaskRepository::jsonFromTask)
                 .toList());
 
         lines.addFirst("[");
@@ -155,7 +155,7 @@ public class TaskRepository {
     public void deleteTaskById(int id) throws RepositoryException {
         var lines = new ArrayList<>(getTasksAll().stream()
                 .filter(task -> task.getId() != id)
-                .map(TaskRepository::jsonFromTaskWithComma)
+                .map(TaskRepository::jsonFromTask)
                 .toList());
 
         lines.addFirst("[");
@@ -219,16 +219,6 @@ public class TaskRepository {
                 + "\"description\":\"" + task.getDescription() + "\","
                 + "\"status\":\"" + task.getStatus() + "\","
                 + "\"createdAt\":\"" + task.getCreatedAt() + "\","
-                + "\"updatedAt\":\"" + task.getUpdatedAt() + "\"}";
-    }
-
-    /**
-     * Converts a Task object into a JSON string, adding a trailing comma for list formatting.
-     *
-     * @param task The task to convert.
-     * @return The JSON string representation of the task with a trailing comma.
-     */
-    private static String jsonFromTaskWithComma(Task task) {
-        return jsonFromTask(task) + ",";
+                + "\"updatedAt\":\"" + task.getUpdatedAt() + "\"},";
     }
 }
