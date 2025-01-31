@@ -19,14 +19,14 @@ import java.util.regex.Pattern;
  */
 public class TaskRepository {
     /**
-     * Relative path to the .json file with the application data.
-     */
-    private final static String FILE_PATH = "data.json";
-
-    /**
      * Cached list of tasks to minimize file reads.
      */
     private List<Task> cachedTasks = null;
+
+    /**
+     * Relative path to the .json file with the application data.
+     */
+    private final static String FILE_PATH = "data.json";
 
     /**
      * Initializes the repository by ensuring the JSON file exists.
@@ -132,6 +132,53 @@ public class TaskRepository {
     }
 
     /**
+     * Writes the task list to the JSON file and updates cache.
+     *
+     * @param tasks The list of tasks to write.
+     * @throws RepositoryException if an error occurs while writing.
+     */
+    private void writeTasksToFile(List<Task> tasks) throws RepositoryException {
+        var lines = new ArrayList<>(tasks.stream()
+                .map(TaskRepository::jsonFromTask)
+                .toList());
+        lines.addFirst("[");
+        lines.add("]");
+        try {
+            Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
+            cachedTasks = new ArrayList<>(tasks);
+        } catch (IOException e) {
+            throw new RepositoryException("Cannot write JSON file");
+        }
+    }
+
+    /**
+     * Loads tasks from the JSON file.
+     *
+     * @return A list of tasks parsed from the file.
+     */
+    private List<Task> loadTasksFromFile() {
+        try {
+            var lines = Files.readAllLines(Path.of(FILE_PATH), StandardCharsets.UTF_8);
+            if (lines.size() < 2 || !lines.removeFirst().equals("[") || !lines.removeLast().equals("]")) {
+                throw new IOException("Invalid JSON format");
+            }
+            cachedTasks = lines.stream()
+                    .filter(line -> line.matches("\\{.*},?"))
+                    .map(TaskRepository::taskFromJson)
+                    .filter(Objects::nonNull)
+                    .toList();
+            return cachedTasks;
+        } catch (IOException e) {
+            System.err.println("Warning: Failed to read JSON file. Using cached data if available.");
+            // Assign empty list only if cache was never loaded
+            if (cachedTasks == null) {
+                cachedTasks = new ArrayList<>();
+            }
+            return cachedTasks;
+        }
+    }
+
+    /**
      * Extracts a value associated with a key from a JSON string.
      *
      * @param json The JSON string.
@@ -183,52 +230,5 @@ public class TaskRepository {
                 + "\"status\":\"" + task.getStatus() + "\","
                 + "\"createdAt\":\"" + task.getCreatedAt() + "\","
                 + "\"updatedAt\":\"" + task.getUpdatedAt() + "\"},";
-    }
-
-    /**
-     * Writes the task list to the JSON file and updates cache.
-     *
-     * @param tasks The list of tasks to write.
-     * @throws RepositoryException if an error occurs while writing.
-     */
-    private void writeTasksToFile(List<Task> tasks) throws RepositoryException {
-        var lines = new ArrayList<>(tasks.stream()
-                .map(TaskRepository::jsonFromTask)
-                .toList());
-        lines.addFirst("[");
-        lines.add("]");
-        try {
-            Files.write(Path.of(FILE_PATH), lines, StandardCharsets.UTF_8);
-            cachedTasks = new ArrayList<>(tasks);
-        } catch (IOException e) {
-            throw new RepositoryException("Cannot write JSON file");
-        }
-    }
-
-    /**
-     * Loads tasks from the JSON file.
-     *
-     * @return A list of tasks parsed from the file.
-     */
-    private List<Task> loadTasksFromFile() {
-        try {
-            var lines = Files.readAllLines(Path.of(FILE_PATH), StandardCharsets.UTF_8);
-            if (lines.size() < 2 || !lines.removeFirst().equals("[") || !lines.removeLast().equals("]")) {
-                throw new IOException("Invalid JSON format");
-            }
-            cachedTasks = lines.stream()
-                    .filter(line -> line.matches("\\{.*},?"))
-                    .map(TaskRepository::taskFromJson)
-                    .filter(Objects::nonNull)
-                    .toList();
-            return cachedTasks;
-        } catch (IOException e) {
-            System.err.println("Warning: Failed to read JSON file. Using cached data if available.");
-            // Assign empty list only if cache was never loaded
-            if (cachedTasks == null) {
-                cachedTasks = new ArrayList<>();
-            }
-            return cachedTasks;
-        }
     }
 }
