@@ -59,6 +59,8 @@ package "persistence" {
         + getTasksByStatus(status: TaskStatus): List<Task>
         + getTaskById(id: int): Task
         + deleteTaskById(id: int): void
+        - writeTasksToFile(tasks: List<Task>): void
+        - loadTasksFromFile(): List<Task>
         - {static} getValueByKey(json: String, key: String): String
         - {static} taskFromJson(json: String): Task
         - {static} jsonFromTask(task: Task): String
